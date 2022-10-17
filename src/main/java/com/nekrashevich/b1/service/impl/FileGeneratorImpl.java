@@ -24,6 +24,8 @@ public class FileGeneratorImpl implements FileGenerator {
         for(int i = 1; i <= 100; i++) {
             String fileName = i + ".txt";
             writeInFile(fileName);
+            logger.log(Level.INFO, "Готово: " + i);
+            logger.log(Level.INFO, "Осталось: " + (100 - i));
         }
         logger.log(Level.INFO, "All files were generated");
     }
