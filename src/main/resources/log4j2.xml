@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Properties>
+        <property name="LOG_DIR">logs</property>
+        <property name="ARCHIVE_LOG_DIR">${LOG_DIR}/archive</property>
+        <property name="pattern_console">%d{HH:mm:ss} %-5level - %msg%n</property>
+        <property name="pattern_zip">%d{HH:mm:ss} [%t] %-5level %logger{5} - %msg%n</property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${pattern_console}" />
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="debug">
+            <AppenderRef ref="Console" level="trace"/>
+        </Root>
+    </Loggers>
+</Configuration>
