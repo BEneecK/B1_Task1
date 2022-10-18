@@ -15,6 +15,6 @@ public class Main {
         fileGenerator.generateFiles();
 
         FileCombinerImpl fileCombiner = new FileCombinerImpl();
-        fileCombiner.combineFiles();
+        fileCombiner.combineFiles("zrw");
     }
 }

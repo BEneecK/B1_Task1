@@ -6,5 +6,5 @@ import java.io.FileNotFoundException;
 
 public interface FileCombiner {
     void combineFiles() throws FileCombinerException;
-    void combineFiles(String regex);
+    void combineFiles(String regex) throws FileCombinerException;
 }

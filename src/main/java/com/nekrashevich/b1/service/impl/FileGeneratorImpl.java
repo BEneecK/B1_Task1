@@ -3,6 +3,7 @@ package com.nekrashevich.b1.service.impl;
 import com.nekrashevich.b1.exception.FileGenerationException;
 import com.nekrashevich.b1.service.FileGenerator;
 import com.nekrashevich.b1.service.StringGenerator;
+import com.nekrashevich.b1.service.consts.FileConsts;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,18 +22,18 @@ public class FileGeneratorImpl implements FileGenerator {
 
     @Override
     public void generateFiles() throws FileGenerationException {
-        for(int i = 1; i <= 100; i++) {
+        for(int i = 1; i <= FileConsts.COUNT_OF_FILES; i++) {
             String fileName = i + ".txt";
             writeInFile(fileName);
             logger.log(Level.INFO, "Готово: " + i);
-            logger.log(Level.INFO, "Осталось: " + (100 - i));
+            logger.log(Level.INFO, "Осталось: " + (FileConsts.COUNT_OF_FILES - i));
         }
         logger.log(Level.INFO, "All files were generated");
     }
 
     private void writeInFile(String fileName) throws FileGenerationException {
         try (FileWriter fileWriter = new FileWriter(fileName, true)){
-            for(int i = 0; i < 100_000; i++) {
+            for(int i = 0; i < FileConsts.COUNT_OF_STRINGS; i++) {
                 String str = stringGenerator.generate()  + "\n";
                 fileWriter.write(str);
             }
