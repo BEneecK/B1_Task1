@@ -24,9 +24,15 @@ public class FileGeneratorImpl implements FileGenerator {
     public void generateFiles() throws FileGenerationException {
         for(int i = 1; i <= FileConsts.COUNT_OF_FILES; i++) {
             String fileName = i + ".txt";
-            writeInFile(fileName);
-            logger.log(Level.INFO, "Готово: " + i);
-            logger.log(Level.INFO, "Осталось: " + (FileConsts.COUNT_OF_FILES - i));
+            Runnable runnable = () -> {
+                try {
+                    writeInFile(fileName);
+                } catch (FileGenerationException e) {
+                    e.printStackTrace();
+                }
+            };;
+            Thread thread = new Thread(runnable);
+            thread.start();
         }
         logger.log(Level.INFO, "All files were generated");
     }

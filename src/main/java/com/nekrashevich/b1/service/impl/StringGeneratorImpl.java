@@ -37,7 +37,7 @@ public class StringGeneratorImpl implements StringGenerator {
         int rightLimit = 122; // letter 'z'
 
         //TODO проверить граничные значения
-        IntPredicate predicate = (n) -> n <= 91 || n >= 96;
+        IntPredicate predicate = (n) -> n < 91 || n > 96;
         return randomASCIIString(leftLimit, rightLimit, predicate);
     }
 
