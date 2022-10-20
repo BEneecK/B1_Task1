@@ -10,11 +10,16 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 
 public class FileGeneratorImpl implements FileGenerator {
 
     private static final Logger logger = LogManager.getLogger();
     private final StringGenerator stringGenerator;
+    private CountDownLatch countDownLatch;
+    {
+        countDownLatch = new CountDownLatch(20);
+    }
 
     public FileGeneratorImpl(StringGenerator stringGenerator) {
         this.stringGenerator = stringGenerator;
@@ -30,9 +35,14 @@ public class FileGeneratorImpl implements FileGenerator {
                 } catch (FileGenerationException e) {
                     e.printStackTrace();
                 }
-            };;
+            };
             Thread thread = new Thread(runnable);
             thread.start();
+        }
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
         logger.log(Level.INFO, "All files were generated");
     }
@@ -43,6 +53,7 @@ public class FileGeneratorImpl implements FileGenerator {
                 String str = stringGenerator.generate()  + "\n";
                 fileWriter.write(str);
             }
+            countDownLatch.countDown();
         } catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage());
             throw new FileGenerationException(e);
