@@ -81,6 +81,7 @@ public class StringGeneratorImpl implements StringGenerator {
         Random rand = new Random();
         double randomNum = startOfRange + rand.nextDouble(endOfRange - startOfRange);
 
+
         return String.format("%.8f", randomNum);
     }
 }

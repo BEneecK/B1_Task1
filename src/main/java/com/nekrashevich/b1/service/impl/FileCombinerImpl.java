@@ -15,10 +15,11 @@ public class FileCombinerImpl implements FileCombiner {
     private static final String FILE_NAME = "combined.txt";
     private static int countOfDeletedStrings = 0;
     private static final Logger logger = LogManager.getLogger();
+
     @Override
     public void combineFiles() throws FileCombinerException {
         try (FileWriter fileWriter = new FileWriter(FILE_NAME, true)) {
-            for(int i = 1; i <= FileConsts.COUNT_OF_FILES; i++) {
+            for (int i = 1; i <= FileConsts.COUNT_OF_FILES; i++) {
                 String fileName = i + ".txt";
                 fileInput(fileWriter, fileName);
                 logger.log(Level.INFO, "Готово: " + i);
@@ -33,7 +34,7 @@ public class FileCombinerImpl implements FileCombiner {
     @Override
     public void combineFiles(String regex) throws FileCombinerException {
         try (FileWriter fileWriterCombiner = new FileWriter(FILE_NAME, true)) {
-            for(int i = 1; i <= FileConsts.COUNT_OF_FILES; i++) {
+            for (int i = 1; i <= FileConsts.COUNT_OF_FILES; i++) {
                 String fileName = i + ".txt";
                 fileInput(fileWriterCombiner, fileName, regex);
                 logger.log(Level.INFO, "Готово: " + i);
@@ -49,20 +50,19 @@ public class FileCombinerImpl implements FileCombiner {
     private void fileInput(FileWriter fileWriter, String fileName) throws FileCombinerException {
 
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
-            while (true) {
-                String currentLine = bufferedReader.readLine();
-                if (currentLine == null) {
-                    break;
-                } else {
-                    String str = currentLine + "\n";
-                    fileWriter.write(str);
-                }
+            String currentLine = bufferedReader.readLine();
+            while (currentLine != null) {
+
+                String str = currentLine + "\n";
+                fileWriter.write(str);
+                currentLine = bufferedReader.readLine();
             }
         }
         catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage());
             throw new FileCombinerException(e);
         }
+
     }
 
     private void fileInput(FileWriter fileWriterCombiner, String fileName, String regex) throws FileCombinerException {
@@ -75,22 +75,17 @@ public class FileCombinerImpl implements FileCombiner {
                 } else {
                     String str = currentLine + "\n";
                     //проверка есть ли символы в строке
-                    if(str.contains(regex)) {
-                        //обнуляем строку
-                        str = "";
+                    if (str.contains(regex)) {
                         //увеличиваем число удаленных
                         countOfDeletedStrings++;
-                    }
-                    else {
+                    } else {
                         //если нет, то добавляем строку в список
                         list.add(str);
+                        fileWriterCombiner.write(str);
                     }
-                    //записываем строку в файл
-                    fileWriterCombiner.write(str);
                 }
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage());
             throw new FileCombinerException(e);
         }
@@ -99,16 +94,11 @@ public class FileCombinerImpl implements FileCombiner {
     }
 
     private void updateFile(List<String> list, String fileName) throws FileCombinerException {
-        try (FileWriter fileWriter = new FileWriter(fileName, false)){
-            list.forEach((el) -> {
-                try {
-                    fileWriter.write(el);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }
-        catch (IOException e) {
+        try (FileWriter fileWriter = new FileWriter(fileName, false)) {
+            for (String el : list) {
+                fileWriter.write(el);
+            }
+        } catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage());
             throw new FileCombinerException(e);
         }
