@@ -1,7 +1,10 @@
 package com.nekrashevich.b1.database;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -9,6 +12,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 public class Connector {
+    private static final Logger logger = LogManager.getLogger();
     static Connection dbConnection;
 
     public static Connection getDbConnection()
@@ -30,12 +34,9 @@ public class Connector {
             password = property.getProperty("jdbc.password");
 
         } catch (IOException e) {
-            System.err.println("ОШИБКА: Файл свойств отсуствует!");
+            logger.log(Level.ERROR, "File not found");
         }
 
-
-//        String connectionString = "jdbc:mysql://" + dbHost + ":"
-//                + dbPort + "/" + dbName;
         Class.forName(name);
 
         dbConnection = DriverManager.getConnection(url,

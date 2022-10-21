@@ -17,8 +17,9 @@ public class FileGeneratorImpl implements FileGenerator {
     private static final Logger logger = LogManager.getLogger();
     private final StringGenerator stringGenerator;
     private CountDownLatch countDownLatch;
+
     {
-        countDownLatch = new CountDownLatch(20);
+        countDownLatch = new CountDownLatch(FileConsts.COUNT_OF_FILES);
     }
 
     public FileGeneratorImpl(StringGenerator stringGenerator) {
@@ -27,7 +28,7 @@ public class FileGeneratorImpl implements FileGenerator {
 
     @Override
     public void generateFiles() throws FileGenerationException {
-        for(int i = 1; i <= FileConsts.COUNT_OF_FILES; i++) {
+        for (int i = 1; i <= FileConsts.COUNT_OF_FILES; i++) {
             String fileName = i + ".txt";
             Runnable runnable = () -> {
                 try {
@@ -42,15 +43,16 @@ public class FileGeneratorImpl implements FileGenerator {
         try {
             countDownLatch.await();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage());
+            throw new FileGenerationException(e);
         }
-        logger.log(Level.INFO, "All files were generated");
+        logger.log(Level.INFO, "All files have been generated");
     }
 
     private void writeInFile(String fileName) throws FileGenerationException {
-        try (FileWriter fileWriter = new FileWriter(fileName, true)){
-            for(int i = 0; i < FileConsts.COUNT_OF_STRINGS; i++) {
-                String str = stringGenerator.generate()  + "\n";
+        try (FileWriter fileWriter = new FileWriter(fileName, true)) {
+            for (int i = 0; i < FileConsts.COUNT_OF_STRINGS; i++) {
+                String str = stringGenerator.generate() + "\n";
                 fileWriter.write(str);
             }
             countDownLatch.countDown();

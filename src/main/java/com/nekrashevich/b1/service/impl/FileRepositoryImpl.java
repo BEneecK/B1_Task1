@@ -1,16 +1,14 @@
 package com.nekrashevich.b1.service.impl;
 
 import com.nekrashevich.b1.database.Connector;
+import com.nekrashevich.b1.exception.FileRepositoryException;
 import com.nekrashevich.b1.service.FileRepository;
-import com.nekrashevich.b1.service.consts.DataBaseConsts;
-import com.nekrashevich.b1.service.consts.FileConsts;
+import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -19,31 +17,46 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileRepositoryImpl implements FileRepository {
+    private static Connection connection;
     private static final Logger logger = LogManager.getLogger();
-    private static final String STRINGS_IMPORTED = "Перенесено: ";
-    private static final String STRING_LEFT = "Осталось: ";
+    private static final String STRINGS_IMPORTED = "Imported: ";
+    private static final String STRING_LEFT = "Left: ";
+    private static final String INSERT = "INSERT INTO task1_db.table (date, latinString, cyrillicString, integerNumb, doubleNumb) VALUES (?,?,?,?,?)";
     private static int countOfLines;
 
+    {
+        try {
+            connection = Connector.getDbConnection();
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
-    public void importFile(int numberOfFile) {
+    public void importFile(int numberOfFile) throws FileRepositoryException {
         String fileName = numberOfFile + ".txt";
         stringsToList(fileName);
     }
 
     @Override
-    public double sumOfInteger() {
-        return 0;
+    public void executeScript(String fileName) throws FileRepositoryException {
+        //Initialize the script runner
+        ScriptRunner sr = new ScriptRunner(connection);
+        //Creating a reader object
+        Reader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(fileName));
+        } catch (FileNotFoundException e) {
+            logger.log(Level.ERROR, e.getMessage());
+            throw new FileRepositoryException(e);
+        }
+        //Running the script
+        sr.runScript(reader);
     }
 
-    @Override
-    public double medianOfDouble() {
-        return 0;
-    }
+    private void stringsToList(String fileName) throws FileRepositoryException {
 
-    public void stringsToList(String fileName){
-
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));
-             Connection connection = Connector.getDbConnection()) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
             List<String> lines = new ArrayList<>();
             String currentLine = bufferedReader.readLine();
             while (currentLine != null) {
@@ -54,13 +67,13 @@ public class FileRepositoryImpl implements FileRepository {
             }
             countOfLines = lines.size();
             makeStatement(lines, connection);
-        }
-        catch (IOException | ClassNotFoundException | SQLException e) {
-            throw new RuntimeException();
+        } catch (IOException e) {
+            logger.log(Level.ERROR, e.getMessage());
+            throw new FileRepositoryException(e);
         }
     }
 
-    public String parseLine(String line) {
+    private String parseLine(String line) {
         String[] splitLine = line.split("\\|\\|");
         String date = dateParsing(splitLine[0]);
         String doubleNumber = splitLine[4].replace(',', '.');
@@ -78,30 +91,30 @@ public class FileRepositoryImpl implements FileRepository {
         return year + "-" + month + "-" + day;
     }
 
-    private void makeStatement(List<String> lines, Connection connection) {
+    private void makeStatement(List<String> lines, Connection connection) throws FileRepositoryException {
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(DataBaseConsts.INSERT);
-            for(String line : lines) {
+            PreparedStatement preparedStatement = connection.prepareStatement(INSERT);
+            for (String line : lines) {
                 String[] splitLine = line.split("\\|\\|");
                 preparedStatement.setDate(1, Date.valueOf(splitLine[0]));
                 preparedStatement.setString(2, splitLine[1]);
                 preparedStatement.setString(3, splitLine[2]);
                 preparedStatement.setInt(4, Integer.parseInt(splitLine[3]));
                 preparedStatement.setDouble(5, Double.parseDouble(splitLine[4]));
-                if(lines.indexOf(line) % 1000 == 0) {
+                if (lines.indexOf(line) % 1000 == 0) {
                     preparedStatement.executeBatch();
                     int countOfImportedStrings = lines.indexOf(line);
                     logger.log(Level.INFO, STRINGS_IMPORTED + countOfImportedStrings);
-                    logger.log(Level.INFO, STRING_LEFT + countOfLines);
+                    logger.log(Level.INFO, STRING_LEFT + (countOfLines - countOfImportedStrings));
                     preparedStatement.clearBatch();
                 }
                 preparedStatement.addBatch();
             }
             preparedStatement.executeBatch();
-            logger.log(Level.INFO, "Все данные перенесены");
-        }
-        catch (SQLException e) {
-            throw new RuntimeException(e);
+            logger.log(Level.INFO, "All strings have been imported");
+        } catch (SQLException e) {
+            logger.log(Level.ERROR, e.getMessage());
+            throw new FileRepositoryException(e);
         }
     }
 

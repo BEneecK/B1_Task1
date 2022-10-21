@@ -1,23 +1,27 @@
 package com.nekrashevich.b1;
 
+import com.nekrashevich.b1.controller.Controller;
+import com.nekrashevich.b1.exception.ControllerException;
 import com.nekrashevich.b1.exception.FileCombinerException;
 import com.nekrashevich.b1.exception.FileGenerationException;
-import com.nekrashevich.b1.service.FileRepository;
-import com.nekrashevich.b1.service.impl.*;
+import com.nekrashevich.b1.exception.FileRepositoryException;
+import com.nekrashevich.b1.service.impl.FileGeneratorImpl;
+import com.nekrashevich.b1.service.impl.StringGeneratorImpl;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Main {
-    public static void main(String[] args) throws FileGenerationException, FileCombinerException {
+    private static final Logger logger = LogManager.getLogger();
 
-        FileGeneratorImpl fileGenerator = new FileGeneratorImpl(new StringGeneratorImpl());
-        fileGenerator.generateFiles();
+    public static void main(String[] args) throws FileGenerationException, FileCombinerException,
+            FileRepositoryException, ControllerException {
 
-        FileCombinerImpl fileCombiner = new FileCombinerImpl();
-        fileCombiner.combineFiles("а");
+//        logger.log(Level.INFO, "Generating files...");
+//        FileGeneratorImpl fileGenerator = new FileGeneratorImpl(new StringGeneratorImpl());
+//        fileGenerator.generateFiles();
 
-
-//        FileRepositoryImpl fileRepository = new FileRepositoryImpl();
-//        fileRepository.importFile(1);
-
-
+        Controller controller = new Controller();
+        controller.mainController();
     }
 }

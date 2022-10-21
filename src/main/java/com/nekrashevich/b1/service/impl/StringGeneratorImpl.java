@@ -1,8 +1,6 @@
 package com.nekrashevich.b1.service.impl;
 
 import com.nekrashevich.b1.service.StringGenerator;
-import com.nekrashevich.b1.service.consts.FileConsts;
-import com.nekrashevich.b1.service.consts.GenerationConsts;
 
 import java.text.SimpleDateFormat;
 import java.time.Duration;
@@ -13,7 +11,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.IntPredicate;
 
 public class StringGeneratorImpl implements StringGenerator {
-
+    private static final int DAYS_IN_YEAR = 365;
+    private static final int COUNT_OF_YEARS = 5;
+    private static final String DATE_FORMAT = "dd.MM.yyyy";
 
     @Override
     public String generate() {
@@ -23,12 +23,12 @@ public class StringGeneratorImpl implements StringGenerator {
 
     private String date() {
         Date date = Date.from(Instant.now().minus(Duration.ofDays(
-                GenerationConsts.COUNT_OF_YEARS * GenerationConsts.DAYS_IN_YEAR)));
+                COUNT_OF_YEARS * DAYS_IN_YEAR)));
         long startMillis = date.getTime();
         long randomMillisSinceEpoch = ThreadLocalRandom
                 .current()
                 .nextLong(startMillis, Date.from(Instant.now()).getTime());
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(GenerationConsts.DATE_FORMAT);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DATE_FORMAT);
         return simpleDateFormat.format(new Date(randomMillisSinceEpoch));
     }
 
@@ -36,7 +36,6 @@ public class StringGeneratorImpl implements StringGenerator {
         int leftLimit = 65; // letter 'A'
         int rightLimit = 122; // letter 'z'
 
-        //TODO проверить граничные значения
         IntPredicate predicate = (n) -> n < 91 || n > 96;
         return randomASCIIString(leftLimit, rightLimit, predicate);
     }
@@ -45,7 +44,6 @@ public class StringGeneratorImpl implements StringGenerator {
         int leftLimit = 1025; // letter 'Ё'
         int rightLimit = 1105; // letter 'ё'
 
-        //TODO проверить граничные значения
         IntPredicate predicate = (n) -> n != 1104 && (n == 1025 || n >= 1040);
         return randomASCIIString(leftLimit, rightLimit, predicate);
     }
