@@ -12,9 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileCombinerImpl implements FileCombiner {
-    private static String FILE_NAME = "";
-    private static int countOfDeletedStrings = 0;
     private static final Logger logger = LogManager.getLogger();
+    private static String FILE_NAME;
+    private static int countOfDeletedStrings = 0;
 
     @Override
     public void combineFiles() throws FileCombinerException {
@@ -46,7 +46,7 @@ public class FileCombinerImpl implements FileCombiner {
             logger.log(Level.ERROR, e.getMessage());
             throw new FileCombinerException(e);
         }
-        logger.log(Level.INFO, "Count: " + countOfDeletedStrings);
+        logger.log(Level.INFO, "Count of deleted strings: " + countOfDeletedStrings);
     }
 
     private void fileInput(FileWriter fileWriter, String fileName) throws FileCombinerException {
@@ -58,8 +58,7 @@ public class FileCombinerImpl implements FileCombiner {
                 fileWriter.write(str);
                 currentLine = bufferedReader.readLine();
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage());
             throw new FileCombinerException(e);
         }
@@ -68,22 +67,19 @@ public class FileCombinerImpl implements FileCombiner {
     private void fileInput(FileWriter fileWriterCombiner, String fileName, String regex) throws FileCombinerException {
         List<String> list = new ArrayList<>();
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
-            while (true) {
-                String currentLine = bufferedReader.readLine();
-                if (currentLine == null) {
-                    break;
+            String currentLine = bufferedReader.readLine();
+            while (currentLine != null) {
+                String str = currentLine + "\n";
+                //проверка есть ли символы в строке
+                if (str.contains(regex)) {
+                    //увеличиваем число удаленных
+                    countOfDeletedStrings++;
                 } else {
-                    String str = currentLine + "\n";
-                    //проверка есть ли символы в строке
-                    if (str.contains(regex)) {
-                        //увеличиваем число удаленных
-                        countOfDeletedStrings++;
-                    } else {
-                        //если нет, то добавляем строку в список
-                        list.add(str);
-                        fileWriterCombiner.write(str);
-                    }
+                    //если нет, то добавляем строку в список
+                    list.add(str);
+                    fileWriterCombiner.write(str);
                 }
+                currentLine = bufferedReader.readLine();
             }
         } catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage());
@@ -109,7 +105,7 @@ public class FileCombinerImpl implements FileCombiner {
         for (int i = 1; true; i++) {
             String tempFileName = FILE_NAME + i + ".txt";
             File file = new File(tempFileName);
-            if(!file.exists()) {
+            if (!file.exists()) {
                 FILE_NAME = FILE_NAME + i + ".txt";
                 break;
             }

@@ -16,11 +16,6 @@ public class FileGeneratorImpl implements FileGenerator {
 
     private static final Logger logger = LogManager.getLogger();
     private final StringGenerator stringGenerator;
-    private CountDownLatch countDownLatch;
-
-    {
-        countDownLatch = new CountDownLatch(FileConsts.COUNT_OF_FILES);
-    }
 
     public FileGeneratorImpl(StringGenerator stringGenerator) {
         this.stringGenerator = stringGenerator;
@@ -28,11 +23,13 @@ public class FileGeneratorImpl implements FileGenerator {
 
     @Override
     public void generateFiles() throws FileGenerationException {
+        CountDownLatch countDownLatch = new CountDownLatch(FileConsts.COUNT_OF_FILES);
         for (int i = 1; i <= FileConsts.COUNT_OF_FILES; i++) {
             String fileName = i + ".txt";
             Runnable runnable = () -> {
                 try {
                     writeInFile(fileName);
+                    countDownLatch.countDown();
                 } catch (FileGenerationException e) {
                     e.printStackTrace();
                 }
@@ -55,7 +52,6 @@ public class FileGeneratorImpl implements FileGenerator {
                 String str = stringGenerator.generate() + "\n";
                 fileWriter.write(str);
             }
-            countDownLatch.countDown();
         } catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage());
             throw new FileGenerationException(e);

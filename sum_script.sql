@@ -1,0 +1,1 @@
+SELECT SUM(integerNumb) AS sum FROM task1_db.table;

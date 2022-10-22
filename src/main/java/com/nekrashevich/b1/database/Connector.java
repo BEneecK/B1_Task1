@@ -15,9 +15,7 @@ public class Connector {
     private static final Logger logger = LogManager.getLogger();
     static Connection dbConnection;
 
-    public static Connection getDbConnection()
-            throws ClassNotFoundException, SQLException {
-
+    static {
         Properties property = new Properties();
 
         String name = "";
@@ -33,15 +31,22 @@ public class Connector {
             username = property.getProperty("jdbc.username");
             password = property.getProperty("jdbc.password");
 
-        } catch (IOException e) {
+            Class.forName(name);
+
+            dbConnection = DriverManager.getConnection(url, username, password);
+        } catch (IOException | ClassNotFoundException | SQLException e) {
             logger.log(Level.ERROR, "File not found");
         }
+    }
 
-        Class.forName(name);
-
-        dbConnection = DriverManager.getConnection(url,
-                username, password);
-
+    public static Connection getDbConnection() throws SQLException {
+        if (dbConnection.isClosed()) {
+            throw new IllegalStateException("Connection is already closed");
+        }
         return dbConnection;
+    }
+
+    public static void closeConnection() throws SQLException {
+        dbConnection.close();
     }
 }

@@ -17,18 +17,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileRepositoryImpl implements FileRepository {
-    private static Connection connection;
     private static final Logger logger = LogManager.getLogger();
     private static final String STRINGS_IMPORTED = "Imported: ";
     private static final String STRING_LEFT = "Left: ";
     private static final String INSERT = "INSERT INTO task1_db.table (date, latinString, cyrillicString, integerNumb, doubleNumb) VALUES (?,?,?,?,?)";
     private static int countOfLines;
+    private static Connection connection;
 
     {
         try {
             connection = Connector.getDbConnection();
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            logger.log(Level.ERROR, e.getMessage());
         }
     }
 
@@ -38,6 +38,7 @@ public class FileRepositoryImpl implements FileRepository {
         stringsToList(fileName);
     }
 
+    //TODO check if db exist
     @Override
     public void executeScript(String fileName) throws FileRepositoryException {
         //Initialize the script runner
@@ -66,7 +67,7 @@ public class FileRepositoryImpl implements FileRepository {
                 currentLine = bufferedReader.readLine();
             }
             countOfLines = lines.size();
-            makeStatement(lines, connection);
+            writeDataInDB(lines, connection);
         } catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage());
             throw new FileRepositoryException(e);
@@ -75,12 +76,12 @@ public class FileRepositoryImpl implements FileRepository {
 
     private String parseLine(String line) {
         String[] splitLine = line.split("\\|\\|");
-        String date = dateParsing(splitLine[0]);
+        String date = parseDate(splitLine[0]);
         String doubleNumber = splitLine[4].replace(',', '.');
         return date + "||" + splitLine[1] + "||" + splitLine[2] + "||" + splitLine[3] + "||" + doubleNumber;
     }
 
-    private String dateParsing(String date) {
+    private String parseDate(String date) {
         String year;
         String month;
         String day;
@@ -91,24 +92,24 @@ public class FileRepositoryImpl implements FileRepository {
         return year + "-" + month + "-" + day;
     }
 
-    private void makeStatement(List<String> lines, Connection connection) throws FileRepositoryException {
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(INSERT);
-            for (String line : lines) {
-                String[] splitLine = line.split("\\|\\|");
+    private void writeDataInDB(List<String> lines, Connection connection) throws FileRepositoryException {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(INSERT)) {
+            for (int i = 0; i < lines.size(); i++) {
+                String[] splitLine = lines.get(i).split("\\|\\|");
                 preparedStatement.setDate(1, Date.valueOf(splitLine[0]));
                 preparedStatement.setString(2, splitLine[1]);
                 preparedStatement.setString(3, splitLine[2]);
                 preparedStatement.setInt(4, Integer.parseInt(splitLine[3]));
                 preparedStatement.setDouble(5, Double.parseDouble(splitLine[4]));
-                if (lines.indexOf(line) % 1000 == 0) {
+                preparedStatement.addBatch();
+
+                if (i % 1000 == 0) {
                     preparedStatement.executeBatch();
-                    int countOfImportedStrings = lines.indexOf(line);
-                    logger.log(Level.INFO, STRINGS_IMPORTED + countOfImportedStrings);
-                    logger.log(Level.INFO, STRING_LEFT + (countOfLines - countOfImportedStrings));
+
+                    logger.log(Level.INFO, STRINGS_IMPORTED + i);
+                    logger.log(Level.INFO, STRING_LEFT + (countOfLines - i));
                     preparedStatement.clearBatch();
                 }
-                preparedStatement.addBatch();
             }
             preparedStatement.executeBatch();
             logger.log(Level.INFO, "All strings have been imported");
