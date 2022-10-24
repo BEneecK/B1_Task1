@@ -38,12 +38,9 @@ public class FileRepositoryImpl implements FileRepository {
         stringsToList(fileName);
     }
 
-    //TODO check if db exist
     @Override
     public void executeScript(String fileName) throws FileRepositoryException {
-        //Initialize the script runner
         ScriptRunner sr = new ScriptRunner(connection);
-        //Creating a reader object
         Reader reader = null;
         try {
             reader = new BufferedReader(new FileReader(fileName));
@@ -51,7 +48,6 @@ public class FileRepositoryImpl implements FileRepository {
             logger.log(Level.ERROR, e.getMessage());
             throw new FileRepositoryException(e);
         }
-        //Running the script
         sr.runScript(reader);
     }
 
@@ -75,12 +71,14 @@ public class FileRepositoryImpl implements FileRepository {
     }
 
     private String parseLine(String line) {
+        //Разделяем строку на массив строк по символам ||
         String[] splitLine = line.split("\\|\\|");
         String date = parseDate(splitLine[0]);
         String doubleNumber = splitLine[4].replace(',', '.');
         return date + "||" + splitLine[1] + "||" + splitLine[2] + "||" + splitLine[3] + "||" + doubleNumber;
     }
 
+    //Перевод даты в формат для записи в бд
     private String parseDate(String date) {
         String year;
         String month;
@@ -103,6 +101,7 @@ public class FileRepositoryImpl implements FileRepository {
                 preparedStatement.setDouble(5, Double.parseDouble(splitLine[4]));
                 preparedStatement.addBatch();
 
+                //Вывод информации о количестве импортированных и оставшяхся каждую 1000 строк
                 if (i % 1000 == 0) {
                     preparedStatement.executeBatch();
 

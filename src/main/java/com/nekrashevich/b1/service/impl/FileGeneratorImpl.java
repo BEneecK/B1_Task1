@@ -38,6 +38,7 @@ public class FileGeneratorImpl implements FileGenerator {
             thread.start();
         }
         try {
+            //Ожидание завершения всех потоков
             countDownLatch.await();
         } catch (InterruptedException e) {
             logger.log(Level.ERROR, e.getMessage());

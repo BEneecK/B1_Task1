@@ -20,6 +20,7 @@ public class FileCombinerImpl implements FileCombiner {
     public void combineFiles() throws FileCombinerException {
         createFileName();
         try (FileWriter fileWriter = new FileWriter(FILE_NAME, true)) {
+            //Цикл по файлам
             for (int i = 1; i <= FileConsts.COUNT_OF_FILES; i++) {
                 String fileName = i + ".txt";
                 fileInput(fileWriter, fileName);
@@ -36,6 +37,7 @@ public class FileCombinerImpl implements FileCombiner {
     public void combineFiles(String regex) throws FileCombinerException {
         createFileName();
         try (FileWriter fileWriterCombiner = new FileWriter(FILE_NAME, true)) {
+            //Цикл по файлам
             for (int i = 1; i <= FileConsts.COUNT_OF_FILES; i++) {
                 String fileName = i + ".txt";
                 fileInput(fileWriterCombiner, fileName, regex);
@@ -52,6 +54,7 @@ public class FileCombinerImpl implements FileCombiner {
     private void fileInput(FileWriter fileWriter, String fileName) throws FileCombinerException {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
             String currentLine = bufferedReader.readLine();
+            //Цикл по строкам
             while (currentLine != null) {
 
                 String str = currentLine + "\n";
@@ -68,6 +71,7 @@ public class FileCombinerImpl implements FileCombiner {
         List<String> list = new ArrayList<>();
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
             String currentLine = bufferedReader.readLine();
+            //Цикл по строкам
             while (currentLine != null) {
                 String str = currentLine + "\n";
                 //проверка есть ли символы в строке

@@ -36,6 +36,7 @@ public class StringGeneratorImpl implements StringGenerator {
         int leftLimit = 65; // letter 'A'
         int rightLimit = 122; // letter 'z'
 
+        //Символы между разными регистрами алфавита
         IntPredicate predicate = (n) -> n < 91 || n > 96;
         return randomASCIIString(leftLimit, rightLimit, predicate);
     }
@@ -44,12 +45,13 @@ public class StringGeneratorImpl implements StringGenerator {
         int leftLimit = 1025; // letter 'Ё'
         int rightLimit = 1105; // letter 'ё'
 
+        //Символы между разными регистрами алфавита
         IntPredicate predicate = (n) -> n != 1104 && (n == 1025 || n >= 1040);
         return randomASCIIString(leftLimit, rightLimit, predicate);
     }
 
     private String randomASCIIString(int leftLimit, int rightLimit, IntPredicate predicate) {
-        int targetStringLength = 10; // length
+        int targetStringLength = 10;
         Random random = new Random();
         StringBuilder stringBuilder = new StringBuilder(targetStringLength);
         for (int i = 0; i < targetStringLength; ) {
